@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY . .
 RUN pip install --upgrade pip \
-    && pip install -i https://pypi.douban.com/simple/ -r requirements.txt \
+    && pip install -r requirements.txt \
     && chmod +x entrypoint.sh
 
 ENTRYPOINT ["bash", "entrypoint.sh"]
