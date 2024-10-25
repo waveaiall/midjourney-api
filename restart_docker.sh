@@ -35,22 +35,27 @@ echo '------------------------>start mj-server------------------------>'
 
 # docker network create mjapi
 
-docker run -d --net mjapi --name mj-server -p 8062:8062 \
+sudo docker run -d --net mjapi --name mj-server -p 8062:8062 \
 	-e TZ=Asia/Shanghai \
 	-e LOG_LEVEL=DEBUG \
+    -e USER_TOKEN="NzEwNDY0NTA4Mjc1MDY0OTAy.GkM6DD.9t2VUL2SW3FNmH4Mkt2Lw-mGAHtYJvoys41EyU" \
+	-e GUILD_ID="1298890119646023690" \
+	-e CHANNEL_ID="1298890119646023693" \
 	-e CONCUR_SIZE=3 \
 	-e WAIT_SIZE=10 \
 	learn2pro/midjourney-api:$new_version
 
-sudo docker run -d -p 8062:8062 learn2pro/midjourney-api:$new_version /bin/bash
-
 echo '------------------------>start mj-bot------------------------>'
-docker run -d --net mjapi --name mj-bot \
+sudo docker run -d --net mjapi --name mj-bot \
 	-e TZ=Asia/Shanghai \
 	-e LOG_LEVEL=DEBUG \
+    -e USER_TOKEN="NzEwNDY0NTA4Mjc1MDY0OTAy.GkM6DD.9t2VUL2SW3FNmH4Mkt2Lw-mGAHtYJvoys41EyU" \
+	-e BOT_TOKEN="MTI5ODg1NzczNjkwNTQyOTAwMw.Gr8MiT.wai6TlLIVkVaL180bsj3BmIYAWOs1xvH-BV2Rs" \
+	-e GUILD_ID="1298890119646023690" \
+	-e CHANNEL_ID="1298890119646023693" \
 	-e CALLBACK_URL="http://mj-server:8062/v1/api/trigger/midjourney/callback" \
 	-e QUEUE_RELEASE_API="http://mj-server:8062/v1/api/trigger/queue/release" \
-	kunyu/midjourney-api:1.0 bot
+	learn2pro/midjourney-api:$new_version
 
 echo 'restart done'
 
