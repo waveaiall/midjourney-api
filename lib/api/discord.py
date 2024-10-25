@@ -7,9 +7,9 @@ import aiohttp
 from lib.api import CHANNEL_ID, USER_TOKEN, GUILD_ID, DRAW_VERSION, PROXY_URL
 from util.fetch import fetch, fetch_json, FetchMethod
 
-TRIGGER_URL = "https://discord.com/api/v9/interactions"
-UPLOAD_ATTACHMENT_URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/attachments"
-SEND_MESSAGE_URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages"
+TRIGGER_URL = "http://discord.com/api/v9/interactions"
+UPLOAD_ATTACHMENT_URL = f"http://discord.com/api/v9/channels/{CHANNEL_ID}/attachments"
+SEND_MESSAGE_URL = f"http://discord.com/api/v9/channels/{CHANNEL_ID}/messages"
 HEADERS = {
     "Content-Type": "application/json",
     "Authorization": USER_TOKEN
