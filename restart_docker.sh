@@ -1,6 +1,6 @@
 #!/bin/bash
 
-image_version=$(sudo docker image ls|grep learn2pro/midjourney-api|tail -n +2|head -n 1|awk -F ' ' '{print $2}'|cut -f2 -d '.')
+image_version=$(sudo docker image ls|grep learn2pro/midjourney-api|tail -n +1|head -n 1|awk -F ' ' '{print $2}'|cut -f2 -d '.')
 incr_number=$(($image_version+1))
 new_version="0."$incr_number".0"
 

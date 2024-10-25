@@ -14,3 +14,4 @@ test/**/data
 # pipenv
 Pipfile
 Pipfile.lock
+Dockerfile
