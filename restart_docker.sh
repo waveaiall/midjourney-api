@@ -39,14 +39,14 @@ sudo docker run -d --net mjapi --name mj-server -p 8062:8062 \
 	-e TZ=Asia/Shanghai \
 	-e CONCUR_SIZE=3 \
 	-e WAIT_SIZE=10 \
-	learn2pro/midjourney-api:0.2.0
+	learn2pro/midjourney-api:$new_version
 
 echo '------------------------>start mj-bot------------------------>'
 sudo docker run -d --net mjapi --name mj-bot \
 	-e TZ=Asia/Shanghai \
 	-e CALLBACK_URL="http://mj-server:8062/v1/api/trigger/midjourney/callback" \
 	-e QUEUE_RELEASE_API="http://mj-server:8062/v1/api/trigger/queue/release" \
-	learn2pro/midjourney-api:0.2.0 bot
+	learn2pro/midjourney-api:$new_version bot
 
 echo 'restart done'
 
