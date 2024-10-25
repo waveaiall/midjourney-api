@@ -52,6 +52,9 @@ class TriggerResponse(BaseModel):
     trigger_id: str
     trigger_type: str = ""
 
+class CallbackResponse(BaseModel):
+    code: int
+    message: str
 
 class UploadResponse(BaseModel):
     message: str = "success"

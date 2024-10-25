@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, Request
 
 from lib.api import discord
 from lib.api.discord import TriggerType
@@ -16,10 +16,34 @@ from .schema import (
     TriggerDescribeIn,
     SendMessageResponse,
     SendMessageIn,
+    CallbackResponse,
 )
+from loguru import logger
+import json
 
 router = APIRouter()
 
+@router.post("/midjourney/callback", response_model=CallbackResponse)
+async def callback(request: Request):
+    body = await request.body()  # This will return the body as bytes
+    body_str = body.decode("utf-8")  # Convert bytes to a string
+    logger.info(body_str)
+    body_json = json.loads(body_str)
+    if body_json['type'] == 'end':
+        trigger_id = body_json["trigger_id"]
+        msg_id = body_json["id"]
+        filename = body_json["attachments"][0]["filename"]
+        msg_hash = body_json["attachments"][0]["filename"].split("_")[-1].split(".")[0]
+        url = body_json["attachments"][0]["url"]
+        logger.info(f'trigger_id={trigger_id}')
+        logger.info(f'msg_id={msg_id}')
+        logger.info(f'filename={filename}')
+        logger.info(f'msg_hash={msg_hash}')
+        logger.info(f'url={url}')
+    else:
+        logger.info(
+            '=======================>generating=======================>')
+    return {'code': 0, 'message': 'succeed'}
 
 @router.post("/imagine", response_model=TriggerResponse)
 async def imagine(body: TriggerImagineIn):

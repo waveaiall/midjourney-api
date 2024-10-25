@@ -1,5 +1,5 @@
 FROM python:3.10.6
-LABEL creator="yokon" email="944682328@qq.com"
+# LABEL creator="yokon" email="944682328@qq.com"
 
 WORKDIR /app
 

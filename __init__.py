@@ -4,6 +4,14 @@ from os import getenv
 from dotenv import load_dotenv
 from loguru import logger
 
+import sys
+import os
+
+# 获取项目根目录
+project_root = os.path.dirname(os.path.abspath(__file__))
+# 将项目根目录添加到 PYTHONPATH
+sys.path.append(project_root)
+
 # env config load
 load_dotenv()
 

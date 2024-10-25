@@ -8,7 +8,7 @@ from util.fetch import fetch
 
 
 async def callback(data):
-    logger.debug(f"callback data: {data}")
+    logger.debug(f"callback data: {data} url:{CALLBACK_URL}")
     if not CALLBACK_URL:
         return
 

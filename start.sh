@@ -19,6 +19,6 @@ docker run -d --net mjapi --name mj-bot \
 	-e BOT_TOKEN="" \
 	-e GUILD_ID="" \
 	-e CHANNEL_ID="" \
-	-e CALLBACK_URL="" \
+	-e CALLBACK_URL="http://mj-server:8062/v1/api/trigger/midjourney/callback" \
 	-e QUEUE_RELEASE_API="http://mj-server:8062/v1/api/trigger/queue/release" \
 	kunyu/midjourney-api:1.0 bot
