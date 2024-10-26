@@ -25,12 +25,12 @@ from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result
 
 router = APIRouter()
 
-@router.get('/midjourney/result', response_model=GenerateResult)
+@router.get('/midjourney/result/{trigger_id}', response_model=GenerateResult)
 async def get_result(trigger_id: str):
     try:
         data = select_by_trigger(trigger_id)
         logger.info(data)
-        return {'code': 0, 'message': data['stage'], 'data': data['pic_url']}
+        return {'code': 0, 'message': data[2], 'data': data[3]}
     except Exception as e:
         logger.error('get result meet some error!', e)
         return {'code': -1, 'message': 'get result meet some error!'}
