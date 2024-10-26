@@ -49,7 +49,7 @@ class QueueReleaseIn(BaseModel):
 
 class TriggerResponse(BaseModel):
     message: str = "success"
-    trigger_id: str
+    trigger_id: Optional[str]
     trigger_type: str = ""
 
 class CallbackResponse(BaseModel):
@@ -59,7 +59,7 @@ class CallbackResponse(BaseModel):
 class GenerateResult(BaseModel):
     code: int
     message: str
-    data: str
+    data: Optional[str]
 
 class UploadResponse(BaseModel):
     message: str = "success"

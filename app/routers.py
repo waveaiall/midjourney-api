@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, Request
 
+import traceback
 from lib.api import discord
 from lib.api.discord import TriggerType
 from util._queue import taskqueue
@@ -29,11 +30,30 @@ router = APIRouter()
 async def get_result(trigger_id: str):
     try:
         data = select_by_trigger(trigger_id)
-        logger.info(data)
-        return {'code': 0, 'message': data[2], 'data': data[3]}
+        if not data:
+            return {'code': -2, 'message': 'no trigger task, please retry the prompt!'}
+        else:
+            row = data[0]
+            return {'code': 0, 'message': row[2], 'data': row[3]}
     except Exception as e:
-        logger.error('get result meet some error!', e)
+        logger.error('get result meet some error! msg={e}')
+        traceback.print_exc()  # 打印堆栈跟踪信息
         return {'code': -1, 'message': 'get result meet some error!'}
+
+
+@router.get('/midjourney/upscale/{trigger_id}/{index}', response_model=TriggerResponse)
+async def upscale_by_trigger(trigger_id: str, index:int):
+    try:
+        data = select_by_trigger(trigger_id)
+        if not data:
+            return {'message': 'no trigger task, please retry the prompt!', 'trigger_id':trigger_id}
+        else:
+            row = data[0]
+            return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=trigger_id))
+    except Exception as e:
+        logger.error(f'get result meet some error! msg={e}')
+        traceback.print_exc()  # 打印堆栈跟踪信息
+        return {'message': 'upscale meet some error!', 'trigger_id':trigger_id}
 
 
 @router.post("/midjourney/callback", response_model=CallbackResponse)
@@ -44,8 +64,8 @@ async def callback(request: Request):
     body_json = json.loads(body_str)
     stage = body_json['type']
     trigger_id = body_json["trigger_id"]
+    msg_id = body_json["id"]
     if stage == 'end':
-        msg_id = body_json["id"]
         filename = body_json["attachments"][0]["filename"]
         msg_hash = body_json["attachments"][0]["filename"].split("_")[-1].split(".")[0]
         url = body_json["attachments"][0]["url"]
@@ -54,10 +74,10 @@ async def callback(request: Request):
         logger.info(f'filename={filename}')
         logger.info(f'msg_hash={msg_hash}')
         logger.info(f'url={url}')
-        upsert_pic_result(trigger_id, stage, url)
+        upsert_pic_result(trigger_id, stage, url, msg_id, msg_hash)
     else:
         logger.info('=======================>generating=======================>')
-        upsert_pic_result(trigger_id, stage, '')
+        upsert_pic_result(trigger_id, stage, msg_id, '', '')
     return {'code': 0, 'message': 'succeed'}
 
 @router.post("/imagine", response_model=TriggerResponse)
@@ -71,6 +91,7 @@ async def imagine(body: TriggerImagineIn):
 
 @router.post("/upscale", response_model=TriggerResponse)
 async def upscale(body: TriggerUVIn):
+    print(body)
     trigger_id = body.trigger_id
     trigger_type = TriggerType.upscale.value
 
