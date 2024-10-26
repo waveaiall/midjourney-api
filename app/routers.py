@@ -17,11 +17,24 @@ from .schema import (
     SendMessageResponse,
     SendMessageIn,
     CallbackResponse,
+    GenerateResult,
 )
 from loguru import logger
 import json
+from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result
 
 router = APIRouter()
+
+@router.get('/midjourney/result', response_model=GenerateResult)
+async def get_result(trigger_id: str):
+    try:
+        data = select_by_trigger(trigger_id)
+        logger.info(data)
+        return {'code': 0, 'message': data['stage'], 'data': data['pic_url']}
+    except Exception as e:
+        logger.error('get result meet some error!', e)
+        return {'code': -1, 'message': 'get result meet some error!'}
+
 
 @router.post("/midjourney/callback", response_model=CallbackResponse)
 async def callback(request: Request):
@@ -29,8 +42,9 @@ async def callback(request: Request):
     body_str = body.decode("utf-8")  # Convert bytes to a string
     logger.info(body_str)
     body_json = json.loads(body_str)
-    if body_json['type'] == 'end':
-        trigger_id = body_json["trigger_id"]
+    stage = body_json['type']
+    trigger_id = body_json["trigger_id"]
+    if stage == 'end':
         msg_id = body_json["id"]
         filename = body_json["attachments"][0]["filename"]
         msg_hash = body_json["attachments"][0]["filename"].split("_")[-1].split(".")[0]
@@ -40,9 +54,10 @@ async def callback(request: Request):
         logger.info(f'filename={filename}')
         logger.info(f'msg_hash={msg_hash}')
         logger.info(f'url={url}')
+        upsert_pic_result(trigger_id, stage, url)
     else:
-        logger.info(
-            '=======================>generating=======================>')
+        logger.info('=======================>generating=======================>')
+        upsert_pic_result(trigger_id, stage, '')
     return {'code': 0, 'message': 'succeed'}
 
 @router.post("/imagine", response_model=TriggerResponse)

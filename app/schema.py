@@ -56,6 +56,11 @@ class CallbackResponse(BaseModel):
     code: int
     message: str
 
+class GenerateResult(BaseModel):
+    code: int
+    message: str
+    data: str
+
 class UploadResponse(BaseModel):
     message: str = "success"
     upload_filename: str = ""
