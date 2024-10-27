@@ -46,6 +46,8 @@ async def fetch(
 ) -> Union[bool, None]:
     logger.debug(f"Fetch: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
+        body = await resp.json()
+        logger.info(f'response with status result={body}')
         if not resp.ok:
             return None
         return True
