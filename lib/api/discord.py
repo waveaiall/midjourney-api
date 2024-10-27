@@ -37,7 +37,7 @@ async def trigger(payload: Dict[str, Any]):
             timeout=aiohttp.ClientTimeout(total=300),
             headers=HEADERS
     ) as session:
-        return await fetch(session, TRIGGER_URL, data=json.dumps(payload))
+        return await fetch_json(session, TRIGGER_URL, data=json.dumps(payload))
 
 
 async def upload_attachment(

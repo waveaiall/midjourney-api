@@ -38,7 +38,7 @@ class FetchMethod:
     put = hdrs.METH_PUT
 
 
-@MaxRetry(2)
+@MaxRetry(1)
 async def fetch(
         session: ClientSession,
         url: str,
@@ -46,8 +46,6 @@ async def fetch(
 ) -> Union[bool, None]:
     logger.debug(f"Fetch: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
-        body = await resp.json()
-        logger.info(f'response with status result={body}')
         if not resp.ok:
             return None
         return True
@@ -59,7 +57,7 @@ async def fetch_json(
         url: str,
         method: str = FetchMethod.post, **kwargs
 ) -> Union[Dict, None]:
-    logger.debug(f"Fetch text: {url}")
+    logger.debug(f"Fetch Json: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
         if not resp.ok:
             return None
