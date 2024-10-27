@@ -18,8 +18,8 @@ class Task:
         self.args = args
         self.kwargs = kwargs
 
-    async def __call__(self) -> None:
-        await self.func(*self.args, **self.kwargs)
+    async def __call__(self):
+        return await self.func(*self.args, **self.kwargs)
 
     def __repr__(self) -> str:
         return f"{self.func.__name__}({self.args}, {self.kwargs})"
@@ -61,7 +61,7 @@ class TaskQueue:
         loop = asyncio.get_running_loop()
         tsk = loop.create_task(task())
         tsk.add_done_callback(
-            lambda t: logger.debug(f"Task[{key}] execution completed: {t.result()}")
+            logger.debug(f"Task[{key}] complete execution")
         )
         # tsk.add_done_callback(
         #     lambda t: print(t.result())

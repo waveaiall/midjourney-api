@@ -47,11 +47,12 @@ async def fetch(
     logger.debug(f"Fetch: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
         if not resp.ok:
-            return None
+            logger.error(f'request {url} failed with msg={await resp.text()}')
+            return False
         return True
 
 
-@MaxRetry(2)
+@MaxRetry(1)
 async def fetch_json(
         session: ClientSession,
         url: str,
@@ -60,5 +61,6 @@ async def fetch_json(
     logger.debug(f"Fetch Json: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
         if not resp.ok:
-            return None
+            logger.error(f'request {url} failed with msg={await resp.text()}')
+            return {}
         return await resp.json()
