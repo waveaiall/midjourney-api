@@ -3,9 +3,11 @@ from enum import Enum
 from typing import Dict, Any, Union
 
 import aiohttp
+from loguru import logger
 
 from lib.api import CHANNEL_ID, USER_TOKEN, GUILD_ID, DRAW_VERSION, PROXY_URL
 from util.fetch import fetch, fetch_json, FetchMethod
+import uuid
 
 TRIGGER_URL = "https://discord.com/api/v9/interactions"
 UPLOAD_ATTACHMENT_URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/attachments"
@@ -102,7 +104,7 @@ def _trigger_payload(type_: int, data: Dict[str, Any], **kwargs) -> Dict[str, An
         "application_id": "936929561302675456",
         "guild_id": GUILD_ID,
         "channel_id": CHANNEL_ID,
-        "session_id": "cb06f61453064c0983f2adae2a88c223",
+        "session_id": f'{uuid.uuid4()}',
         "data": data
     }
     payload.update(kwargs)
