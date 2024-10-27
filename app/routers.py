@@ -77,7 +77,7 @@ async def callback(request: Request):
         upsert_pic_result(trigger_id, stage, url, msg_id, msg_hash)
     else:
         logger.info('=======================>generating=======================>')
-        upsert_pic_result(trigger_id, stage, msg_id, '', '')
+        upsert_pic_result(trigger_id, stage, '', msg_id, '')
     return {'code': 0, 'message': 'succeed'}
 
 @router.post("/imagine", response_model=TriggerResponse)

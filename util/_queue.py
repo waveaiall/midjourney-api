@@ -39,8 +39,8 @@ class TaskQueue:
             *args: P.args,
             **kwargs: P.kwargs
     ) -> None:
-        if len(self._wait_queue) >= self._wait_size:
-            raise QueueFullError(f"Task queue is full: {self._wait_size}")
+        # if len(self._wait_queue) >= self._wait_size:
+        #     raise QueueFullError(f"Task queue is full: {self._wait_size}")
 
         self._wait_queue.append({
             _trigger_id: Task(func, *args, **kwargs)

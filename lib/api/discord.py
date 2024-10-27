@@ -32,10 +32,10 @@ class TriggerType(str, Enum):
 
 async def trigger(payload: Dict[str, Any]):
     async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=30),
+            timeout=aiohttp.ClientTimeout(total=300),
             headers=HEADERS
     ) as session:
-        return await fetch(session, TRIGGER_URL, data=json.dumps(payload), proxy=PROXY_URL)
+        return await fetch(session, TRIGGER_URL, data=json.dumps(payload))
 
 
 async def upload_attachment(
