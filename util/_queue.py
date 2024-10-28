@@ -60,9 +60,9 @@ class TaskQueue:
         logger.debug(f"Task[{key}] start execution: {task}")
         loop = asyncio.get_running_loop()
         tsk = loop.create_task(task())
-        tsk.add_done_callback(
-            logger.debug(f"Task[{key}] complete execution")
-        )
+        # tsk.add_done_callback(
+        #     lambda t: logger.debug(f"Task[{key}] complete execution result={t.result()}")
+        # )
         # tsk.add_done_callback(
         #     lambda t: print(t.result())
         # )  # todo
