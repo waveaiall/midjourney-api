@@ -62,19 +62,18 @@ async def callback(request: Request):
 
 
 @router.get('/midjourney/result/{trigger_id}', response_model=GenerateResult, dependencies=[Depends(check_token)])
-async def get_result(trigger_id: str, token: str = Header(None)):
-    async with getThrottler(token):
-        try:
-            data = select_by_trigger(trigger_id)
-            if not data:
-                return {'code': -2, 'message': 'no trigger task, please retry the prompt!'}
-            else:
-                row = data[0]
-                return {'code': 0, 'message': row[2], 'data': row[3]}
-        except Exception as e:
-            logger.error('get result meet some error! msg={e}')
-            traceback.print_exc()  # 打印堆栈跟踪信息
-            return {'code': -1, 'message': 'get result meet some error!'}
+async def get_result(trigger_id: str):
+    try:
+        data = select_by_trigger(trigger_id)
+        if not data:
+            return {'code': -2, 'message': 'no trigger task, please retry the prompt!'}
+        else:
+            row = data[0]
+            return {'code': 0, 'message': row[2], 'data': row[3]}
+    except Exception as e:
+        logger.error('get result meet some error! msg={e}')
+        traceback.print_exc()  # 打印堆栈跟踪信息
+        return {'code': -1, 'message': 'get result meet some error!'}
 
 
 @router.get('/midjourney/upscale/{trigger_id}/{index}', response_model=TriggerResponse, dependencies=[Depends(check_token)])
