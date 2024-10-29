@@ -47,8 +47,9 @@ async def fetch(
     logger.debug(f"Fetch: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
         if not resp.ok:
-            logger.error(f'request {url} failed with msg={await resp.text()}')
+            logger.error(f'request {url} failed with status={resp.status} msg={await resp.text()}')
             return False
+        logger.info(f'request {url} succeed with status={resp.status} msg={await resp.text()}')
         return True
 
 
@@ -61,6 +62,5 @@ async def fetch_json(
     logger.debug(f"Fetch Json: {url}, {kwargs}")
     async with session.request(method, url, **kwargs) as resp:
         if not resp.ok:
-            # logger.error(f'request {url} failed with msg={await resp.text()}')
             return {}
         return await resp.json()

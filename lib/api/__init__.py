@@ -5,6 +5,7 @@ from exceptions import MissRequiredVariableError
 GUILD_ID = getenv("GUILD_ID")
 CHANNEL_ID = getenv("CHANNEL_ID")
 USER_TOKEN = getenv("USER_TOKEN")
+BOT_TOKEN = getenv("BOT_TOKEN")
 CALLBACK_URL = getenv("CALLBACK_URL")
 PROXY_URL = getenv("PROXY_URL")
 

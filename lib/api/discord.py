@@ -5,7 +5,7 @@ from typing import Dict, Any, Union
 import aiohttp
 from loguru import logger
 
-from lib.api import CHANNEL_ID, USER_TOKEN, GUILD_ID, DRAW_VERSION, PROXY_URL
+from lib.api import CHANNEL_ID, USER_TOKEN, BOT_TOKEN, GUILD_ID, DRAW_VERSION, PROXY_URL
 from util.fetch import fetch, fetch_json, FetchMethod
 import uuid
 
@@ -14,7 +14,8 @@ UPLOAD_ATTACHMENT_URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/attac
 SEND_MESSAGE_URL = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages"
 HEADERS = {
     "Content-Type": "application/json",
-    "Authorization": USER_TOKEN
+    "Authorization": f"{USER_TOKEN}",
+    "User-Agent": "DiscordBot",
 }
 
 
@@ -34,7 +35,7 @@ class TriggerType(str, Enum):
 
 async def trigger(payload: Dict[str, Any]):
     async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=300),
+            timeout=aiohttp.ClientTimeout(total=10),
             headers=HEADERS
     ) as session:
         return await fetch(session, TRIGGER_URL, data=json.dumps(payload))

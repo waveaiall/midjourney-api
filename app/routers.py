@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, Request
+from fastapi import APIRouter, HTTPException, UploadFile, Request, Depends, Header
 
 import traceback
 from lib.api import discord
@@ -23,38 +23,15 @@ from .schema import (
 from loguru import logger
 import json
 from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result
+from auth import isValid, getThrottler
+
 
 router = APIRouter()
 
-@router.get('/midjourney/result/{trigger_id}', response_model=GenerateResult)
-async def get_result(trigger_id: str):
-    try:
-        data = select_by_trigger(trigger_id)
-        if not data:
-            return {'code': -2, 'message': 'no trigger task, please retry the prompt!'}
-        else:
-            row = data[0]
-            return {'code': 0, 'message': row[2], 'data': row[3]}
-    except Exception as e:
-        logger.error('get result meet some error! msg={e}')
-        traceback.print_exc()  # 打印堆栈跟踪信息
-        return {'code': -1, 'message': 'get result meet some error!'}
 
-
-@router.get('/midjourney/upscale/{trigger_id}/{index}', response_model=TriggerResponse)
-async def upscale_by_trigger(trigger_id: str, index:int):
-    try:
-        data = select_by_trigger(trigger_id)
-        if not data:
-            return {'message': 'no trigger task, please retry the prompt!', 'trigger_id':trigger_id}
-        else:
-            row = data[0]
-            return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=trigger_id))
-    except Exception as e:
-        logger.error(f'get result meet some error! msg={e}')
-        traceback.print_exc()  # 打印堆栈跟踪信息
-        return {'message': 'upscale meet some error!', 'trigger_id':trigger_id}
-
+async def check_token(token: str = Header(None)):
+    if not isValid(token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 @router.post("/midjourney/callback", response_model=CallbackResponse)
 async def callback(request: Request):
@@ -67,7 +44,8 @@ async def callback(request: Request):
     msg_id = body_json["id"]
     if stage == 'end':
         filename = body_json["attachments"][0]["filename"]
-        msg_hash = body_json["attachments"][0]["filename"].split("_")[-1].split(".")[0]
+        msg_hash = body_json["attachments"][0]["filename"].split(
+            "_")[-1].split(".")[0]
         url = body_json["attachments"][0]["url"]
         logger.info(f'trigger_id={trigger_id}')
         logger.info(f'msg_id={msg_id}')
@@ -76,17 +54,52 @@ async def callback(request: Request):
         logger.info(f'url={url}')
         upsert_pic_result(trigger_id, stage, url, msg_id, msg_hash)
     else:
-        logger.info('=======================>generating=======================>')
+        logger.info(
+            '=======================>generating=======================>')
         upsert_pic_result(trigger_id, stage, '', msg_id, '')
     return {'code': 0, 'message': 'succeed'}
 
-@router.post("/imagine", response_model=TriggerResponse)
-async def imagine(body: TriggerImagineIn):
-    trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
-    trigger_type = TriggerType.generate.value
 
-    taskqueue.put(trigger_id, discord.generate, prompt)
-    return {"trigger_id": trigger_id, "trigger_type": trigger_type}
+
+@router.get('/midjourney/result/{trigger_id}', response_model=GenerateResult, dependencies=[Depends(check_token)])
+async def get_result(trigger_id: str, token: str = Header(None)):
+    async with getThrottler(token):
+        try:
+            data = select_by_trigger(trigger_id)
+            if not data:
+                return {'code': -2, 'message': 'no trigger task, please retry the prompt!'}
+            else:
+                row = data[0]
+                return {'code': 0, 'message': row[2], 'data': row[3]}
+        except Exception as e:
+            logger.error('get result meet some error! msg={e}')
+            traceback.print_exc()  # 打印堆栈跟踪信息
+            return {'code': -1, 'message': 'get result meet some error!'}
+
+
+@router.get('/midjourney/upscale/{trigger_id}/{index}', response_model=TriggerResponse, dependencies=[Depends(check_token)])
+async def upscale_by_trigger(trigger_id: str, index: int, token: str = Header(None)):
+    async with getThrottler(token):
+        try:
+            data = select_by_trigger(trigger_id)
+            if not data:
+                return {'message': 'no trigger task, please retry the prompt!', 'trigger_id': trigger_id}
+            else:
+                row = data[0]
+                return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=trigger_id))
+        except Exception as e:
+            logger.error(f'get result meet some error! msg={e}')
+            traceback.print_exc()  # 打印堆栈跟踪信息
+            return {'message': 'upscale meet some error!', 'trigger_id': trigger_id}
+
+@router.post("/imagine", response_model=TriggerResponse, dependencies=[Depends(check_token)])
+async def imagine(body: TriggerImagineIn, token: str = Header(None)):
+    async with getThrottler(token):
+        trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
+        trigger_type = TriggerType.generate.value
+
+        taskqueue.put(trigger_id, discord.generate, prompt)
+        return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
 
 @router.post("/upscale", response_model=TriggerResponse)
@@ -171,6 +184,7 @@ async def solo_variation(body: TriggerUVIn):
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
+
 @router.post("/solo_low_variation", response_model=TriggerResponse)
 async def solo_low_variation(body: TriggerUVIn):
     trigger_id = body.trigger_id
@@ -180,6 +194,7 @@ async def solo_low_variation(body: TriggerUVIn):
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
+
 @router.post("/solo_high_variation", response_model=TriggerResponse)
 async def solo_high_variation(body: TriggerUVIn):
     trigger_id = body.trigger_id
@@ -188,6 +203,7 @@ async def solo_high_variation(body: TriggerUVIn):
 
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
+
 
 @router.post("/expand", response_model=TriggerResponse)
 async def expand(body: TriggerExpandIn):
@@ -207,4 +223,3 @@ async def zoomout(body: TriggerZoomOutIn):
 
     # 返回结果
     return {"trigger_id": trigger_id, "trigger_type": trigger_type}
-
