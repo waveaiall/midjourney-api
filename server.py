@@ -1,5 +1,6 @@
 import __init__  # noqa
 from app import server
+import sched
 
 api_app = server.init_app()
 

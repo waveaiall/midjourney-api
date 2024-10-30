@@ -49,7 +49,10 @@ class TaskQueue:
             self._exec()
 
     def pop(self, _trigger_id: str) -> None:
-        self._concur_queue.remove(_trigger_id)
+        try:
+            self._concur_queue.remove(_trigger_id)
+        except Exception as e:
+            logger.warning(f'failed to release the trigger_id={_trigger_id} just skip error={e}')
         if self._wait_queue:
             self._exec()
 
@@ -84,3 +87,12 @@ taskqueue = TaskQueue(
     int(getenv("CONCUR_SIZE") or 9999),
     int(getenv("WAIT_SIZE") or 9999),
 )
+
+def get_task_size():
+    logger.info(f'wait queue size={len(taskqueue._wait_queue)} concurrent queue size={len(taskqueue._concur_queue)}')
+
+def execute_task_by_period():
+    logger.info(f'==============>start execute task by period==============>')
+    while taskqueue._wait_queue and len(taskqueue._concur_queue) < taskqueue._concur_size:
+            logger.info(f'==============>find task==============>')
+            taskqueue._exec()
