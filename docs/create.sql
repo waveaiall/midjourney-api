@@ -16,6 +16,7 @@ CREATE TABLE `wave_midjourney_auth_token` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `token` varchar(256) NOT NULL COMMENT 'trigger_id for midjourney api',
   `rate_limit` int(11) NOT NULL COMMENT 'token维度1s限流值',
+  `period` int(11) NOT NULL COMMENT '限流周期, 单位s =10代表10秒内最多rate_limit次请求',
   `effective` smallint(4) NOT NULL COMMENT '是否有效1=有效, 0=无效',
   `expired_at` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4) COMMENT '过期时间',
   `updated_at` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4) ON UPDATE CURRENT_TIMESTAMP(4) COMMENT '更新时间',

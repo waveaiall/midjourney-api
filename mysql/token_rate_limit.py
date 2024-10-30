@@ -8,6 +8,7 @@ class AuthToken(BaseModel):
     token: str
     rateLimit: int
     effective: int
+    period: int
     expiredAt: datetime
     updatedAt: datetime
     createdAt: datetime
@@ -20,7 +21,7 @@ def selectAllEffective():
     """
     query = f"SELECT * FROM wave_midjourney_auth_token WHERE effective = 1 and expired_at>=now()"
     records = mysql_client.select(query)
-    return [AuthToken(id=item[0], token=item[1], rateLimit=item[2], effective=item[3], expiredAt=item[4], updatedAt=item[5], createdAt=item[6]) for item in records]
+    return [AuthToken(id=item[0], token=item[1], rateLimit=item[2], period=item[3], effective=item[4], expiredAt=item[5], updatedAt=item[6], createdAt=item[7]) for item in records]
 
 
 # insert into wave_midjourney_auth_token value(1, 'abc', 10, 1, now(), now())
