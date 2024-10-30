@@ -39,8 +39,8 @@ class TaskQueue:
             *args: P.args,
             **kwargs: P.kwargs
     ) -> None:
-        # if len(self._wait_queue) >= self._wait_size:
-        #     raise QueueFullError(f"Task queue is full: {self._wait_size}")
+        if len(self._wait_queue) >= self._wait_size:
+            raise QueueFullError(f"Task queue is full: {self._wait_size}")
 
         self._wait_queue.append({
             _trigger_id: Task(func, *args, **kwargs)
@@ -53,8 +53,6 @@ class TaskQueue:
             self._concur_queue.remove(_trigger_id)
         except Exception as e:
             logger.warning(f'failed to release the trigger_id={_trigger_id} just skip error={e}')
-        if self._wait_queue:
-            self._exec()
 
     def _exec(self):
         key, task = self._wait_queue.popleft().popitem()
@@ -65,6 +63,9 @@ class TaskQueue:
         tsk = loop.create_task(task())
         tsk.add_done_callback(
             lambda t: logger.debug(f"Task[{key}] complete execution result={t.result()}")
+        )
+        tsk.add_done_callback(
+            lambda t: self.pop(key) # remove concurrent queue
         )
         # tsk.add_done_callback(
         #     lambda t: print(t.result())
@@ -89,10 +90,10 @@ taskqueue = TaskQueue(
 )
 
 def get_task_size():
-    logger.info(f'wait queue size={len(taskqueue._wait_queue)} concurrent queue size={len(taskqueue._concur_queue)}')
+    logger.info(f'wait queue size={len(taskqueue._wait_queue)} max wait size={taskqueue._wait_size} concurrent queue size={len(taskqueue._concur_queue)} max concurrent size={taskqueue._concur_size}')
 
 def execute_task_by_period():
     logger.info(f'==============>start execute task by period==============>')
-    while taskqueue._wait_queue and len(taskqueue._concur_queue) < taskqueue._concur_size:
+    while taskqueue._wait_queue and len(taskqueue._concur_queue) <= taskqueue._concur_size:
             logger.info(f'==============>find task==============>')
             taskqueue._exec()
