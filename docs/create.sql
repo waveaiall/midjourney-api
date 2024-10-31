@@ -25,4 +25,4 @@ CREATE TABLE `wave_midjourney_auth_token` (
   UNIQUE KEY (`token`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='鉴权+限流表';
 
-insert into wave_midjourney_auth_token (token, rate_limit, effective, expired_at) values ('abc', 3, 1, '2024-12-01 00:00:00');
+insert into wave_midjourney_auth_token (token, rate_limit, `period`, effective, expired_at) values ('abc', 3, 10, 1, '2024-12-01 00:00:00');

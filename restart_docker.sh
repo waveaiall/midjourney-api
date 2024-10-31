@@ -37,8 +37,6 @@ sudo docker rm -f mj-server mj-bot
 
 sudo docker run -d --net mjapi --name mj-server -p 8062:8062 \
 	-e TZ=Asia/Shanghai \
-	-e CONCUR_SIZE=3 \
-	-e WAIT_SIZE=10 \
 	learn2pro/midjourney-api:$new_version
 
 echo '------------------------>start mj-bot------------------------>'
