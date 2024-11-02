@@ -22,7 +22,7 @@ from .schema import (
 )
 from loguru import logger
 import json
-from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result
+from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result, upsert_with_token
 from auth import isValid, getThrottler
 
 
@@ -96,6 +96,7 @@ async def imagine(body: TriggerImagineIn, token: str = Header(None)):
     async with getThrottler(token):
         trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
         trigger_type = TriggerType.generate.value
+        upsert_with_token(trigger_id, 'request', token)
 
         taskqueue.put(trigger_id, discord.generate, prompt)
         return {"trigger_id": trigger_id, "trigger_type": trigger_type}
