@@ -83,13 +83,12 @@ async def upscale_by_trigger(trigger_id: str, index: int, token: str = Header(No
     async with get_throttler(token):
         try:
             data = select_by_trigger(trigger_id)
-            new_trigger_id = str(unique_id())
             if not data:
                 return {'message': 'no trigger task, please retry the prompt!', 'trigger_id': trigger_id}
             else:
                 row = data[0]
-                upsert_with_token(new_trigger_id,'request', token)
-                return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=new_trigger_id))
+                # upsert_with_token(trigger_id,'request', token)
+                return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=trigger_id))
         except Exception as e:
             logger.error(f'get result meet some error! msg={e}')
             traceback.print_exc()  # 打印堆栈跟踪信息
