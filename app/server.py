@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, status
+import sched
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -45,3 +46,7 @@ def register_blueprints(_app):
 def run(host, port):
     _app = init_app()
     uvicorn.run(_app, port=port, host=host)
+
+
+# if __name__ == '__main__':
+#     print('test')

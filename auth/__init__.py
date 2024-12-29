@@ -35,3 +35,6 @@ def update_capacity_mem_and_db(token: str, capacity: int):
 
 def getThrottler(token: str):
     return TOKEN_2_LIMIT[token]
+
+if __name__ == "__main__":
+    refreshToken()
