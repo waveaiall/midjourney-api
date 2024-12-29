@@ -7,15 +7,13 @@ from mysql import token_rate_limit
 
 
 def refreshToken():
-    global TOKEN_2_LIMIT, TOKEN_2_ENTITY
+    global TOKEN_2_LIMIT
     TOKEN_2_LIMIT = {auth_token.token: Throttler(rate_limit=auth_token.rateLimit, period=auth_token.period) for auth_token in token_rate_limit.selectAllEffective()}
-    TOKEN_2_ENTITY = {auth_token.token: auth_token for auth_token in token_rate_limit.selectAllEffective()}
     logger.info(
         f'refresh token info {TOKEN_2_LIMIT.keys()} limit {TOKEN_2_LIMIT.values()}')
 
 
 TOKEN_2_LIMIT = {}
-TOKEN_2_ENTITY = {}
 refreshToken()
 
 
@@ -24,7 +22,7 @@ def is_valid(token: str):
 
 
 def is_exceed_capacity(token: str):
-    capacity = TOKEN_2_ENTITY[token].capacity
+    capacity = get_auth_token(token).capacity
     if capacity is None:
         return False
     else:
@@ -33,14 +31,13 @@ def is_exceed_capacity(token: str):
 
 def update_capacity_mem_and_db(token: str, capacity: int):
     token_rate_limit.updateTokenCapacity(token, capacity)
-    TOKEN_2_ENTITY[token].capacity = capacity
 
 
 def get_throttler(token: str):
     return TOKEN_2_LIMIT[token]
 
 def get_auth_token(token: str):
-    return TOKEN_2_ENTITY[token]
+    return token_rate_limit.selectAuthToken(token)
 
 if __name__ == "__main__":
     refreshToken()
