@@ -23,16 +23,16 @@ from .schema import (
 from loguru import logger
 import json
 from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result, upsert_with_token
-from auth import isValid, getThrottler, isExceedCapacity, update_capacity_mem_and_db
+from auth import is_valid, getThrottler, is_exceed_capacity, update_capacity_mem_and_db
 
 
 router = APIRouter()
 
 
 async def check_token(token: str = Header(None)):
-    if not isValid(token):
+    if not is_valid(token):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    if not isExceedCapacity(token):
+    if not is_exceed_capacity(token):
         raise HTTPException(status_code=429, detail="Exceed Capacity Limit")
 
 @router.post("/midjourney/callback", response_model=CallbackResponse)
