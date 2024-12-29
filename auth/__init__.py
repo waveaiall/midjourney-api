@@ -36,9 +36,11 @@ def update_capacity_mem_and_db(token: str, capacity: int):
     TOKEN_2_ENTITY[token].capacity = capacity
 
 
-def getThrottler(token: str):
+def get_throttler(token: str):
     return TOKEN_2_LIMIT[token]
 
+def get_auth_token(token: str):
+    return TOKEN_2_ENTITY[token]
 
 if __name__ == "__main__":
     refreshToken()

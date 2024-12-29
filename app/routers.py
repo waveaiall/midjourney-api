@@ -23,7 +23,7 @@ from .schema import (
 from loguru import logger
 import json
 from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result, upsert_with_token
-from auth import is_valid, getThrottler, is_exceed_capacity, update_capacity_mem_and_db
+from auth import is_valid, get_throttler, is_exceed_capacity, update_capacity_mem_and_db, get_auth_token
 
 
 router = APIRouter()
@@ -80,7 +80,7 @@ async def get_result(trigger_id: str):
 
 @router.get('/midjourney/upscale/{trigger_id}/{index}', response_model=TriggerResponse, dependencies=[Depends(check_token)])
 async def upscale_by_trigger(trigger_id: str, index: int, token: str = Header(None)):
-    async with getThrottler(token):
+    async with get_throttler(token):
         try:
             data = select_by_trigger(trigger_id)
             new_trigger_id = str(unique_id())
@@ -97,13 +97,13 @@ async def upscale_by_trigger(trigger_id: str, index: int, token: str = Header(No
 
 @router.post("/imagine", response_model=TriggerResponse, dependencies=[Depends(check_token)])
 async def imagine(body: TriggerImagineIn, token: str = Header(None)):
-    async with getThrottler(token):
+    async with get_throttler(token):
         trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
         trigger_type = TriggerType.generate.value
         upsert_with_token(trigger_id, 'request', token)
 
         taskqueue.put(trigger_id, discord.generate, prompt)
-        update_capacity_mem_and_db(token, getThrottler(token).capacity - 1)
+        update_capacity_mem_and_db(token, get_auth_token(token).capacity - 1)
         return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
 
