@@ -32,7 +32,7 @@ def updateTokenCapacity(token: str, capacity: int):
         token: 要更新的token
         capacity: 要更新的容量
     """
-    if not capacity:
+    if capacity is None:
         logger.warning(
             f"current capacity is {capacity}, means infinite, so no need to update")
         return
