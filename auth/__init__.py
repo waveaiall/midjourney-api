@@ -8,8 +8,7 @@ from mysql import token_rate_limit
 
 def refreshToken():
     global TOKEN_2_LIMIT, TOKEN_2_ENTITY
-    TOKEN_2_LIMIT = {auth_token.token: Throttler(rate_limit=auth_token.rateLimit, capacity=auth_token.capacity,
-                                                 period=auth_token.period) for auth_token in token_rate_limit.selectAllEffective()}
+    TOKEN_2_LIMIT = {auth_token.token: Throttler(rate_limit=auth_token.rateLimit, period=auth_token.period) for auth_token in token_rate_limit.selectAllEffective()}
     TOKEN_2_ENTITY = {auth_token.token: auth_token for auth_token in token_rate_limit.selectAllEffective()}
     logger.info(
         f'refresh token info {TOKEN_2_LIMIT.keys()} limit {TOKEN_2_LIMIT.values()}')
