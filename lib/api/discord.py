@@ -128,14 +128,15 @@ async def generate(prompt: str, **kwargs):
     return await trigger(payload)
 
 
-async def upscale(index: int, msg_id: str, msg_hash: str, **kwargs):
+async def upscale(index: int, msg_id: str, msg_hash: str, trigger_id: str, **kwargs):
     kwargs = {
         "message_flags": 0,
         "message_id": msg_id,
     }
     payload = _trigger_payload(3, {
         "component_type": 2,
-        "custom_id": f"MJ::JOB::upsample::{index}::{msg_hash}"
+        "custom_id": f"MJ::JOB::upsample::{index}::{msg_hash}",
+        trigger_id: trigger_id,
     }, **kwargs)
     return await trigger(payload)
 
