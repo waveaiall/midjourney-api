@@ -1,6 +1,7 @@
 from mysql.mysql_conn import mysql_client
 from datetime import datetime
 from pydantic import BaseModel
+from loguru import logger
 
 
 class AuthToken(BaseModel):
@@ -9,6 +10,7 @@ class AuthToken(BaseModel):
     rateLimit: int
     effective: int
     period: int
+    capacity: int
     expiredAt: datetime
     updatedAt: datetime
     createdAt: datetime
@@ -21,7 +23,22 @@ def selectAllEffective():
     """
     query = f"SELECT * FROM wave_midjourney_auth_token WHERE effective = 1 and expired_at>=now()"
     records = mysql_client.select(query)
-    return [AuthToken(id=item[0], token=item[1], rateLimit=item[2], period=item[3], effective=item[4], expiredAt=item[5], updatedAt=item[6], createdAt=item[7]) for item in records]
+    return [AuthToken(id=item[0], token=item[1], rateLimit=item[2], period=item[3], capacity=item[4], effective=item[5], expiredAt=item[6], updatedAt=item[7], createdAt=item[8]) for item in records]
+
+
+def updateTokenCapacity(token: str, capacity: int):
+    """
+    更新token的容量
+        token: 要更新的token
+        capacity: 要更新的容量
+    """
+    if capacity < 0:
+        logger.warning(
+            f"current capacity is {capacity}, less than 0 means infinite, so no need to update")
+        return
+    update_num = max(0, capacity)
+    query = f"UPDATE wave_midjourney_auth_token SET capacity = {update_num} WHERE token = '{token}' limit 1"
+    mysql_client.update(query, ())
 
 
 # insert into wave_midjourney_auth_token value(1, 'abc', 10, 1, now(), now())

@@ -23,7 +23,7 @@ from .schema import (
 from loguru import logger
 import json
 from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result, upsert_with_token
-from auth import isValid, getThrottler
+from auth import isValid, getThrottler, isExceedCapacity, update_capacity_mem_and_db
 
 
 router = APIRouter()
@@ -32,6 +32,8 @@ router = APIRouter()
 async def check_token(token: str = Header(None)):
     if not isValid(token):
         raise HTTPException(status_code=401, detail="Unauthorized")
+    if not isExceedCapacity(token):
+        raise HTTPException(status_code=429, detail="Exceed Capacity Limit")
 
 @router.post("/midjourney/callback", response_model=CallbackResponse)
 async def callback(request: Request):
@@ -81,11 +83,13 @@ async def upscale_by_trigger(trigger_id: str, index: int, token: str = Header(No
     async with getThrottler(token):
         try:
             data = select_by_trigger(trigger_id)
+            new_trigger_id = str(unique_id())
             if not data:
                 return {'message': 'no trigger task, please retry the prompt!', 'trigger_id': trigger_id}
             else:
                 row = data[0]
-                return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=trigger_id))
+                upsert_with_token(new_trigger_id,'request', token)
+                return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=new_trigger_id))
         except Exception as e:
             logger.error(f'get result meet some error! msg={e}')
             traceback.print_exc()  # 打印堆栈跟踪信息
@@ -99,6 +103,7 @@ async def imagine(body: TriggerImagineIn, token: str = Header(None)):
         upsert_with_token(trigger_id, 'request', token)
 
         taskqueue.put(trigger_id, discord.generate, prompt)
+        update_capacity_mem_and_db(token, getThrottler(token).capacity - 1)
         return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
 

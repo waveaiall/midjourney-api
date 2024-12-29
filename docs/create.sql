@@ -18,6 +18,7 @@ CREATE TABLE `wave_midjourney_auth_token` (
   `token` varchar(256) NOT NULL COMMENT 'trigger_id for midjourney api',
   `rate_limit` int(11) NOT NULL COMMENT 'token维度1s限流值',
   `period` int(11) NOT NULL COMMENT '限流周期, 单位s =10代表10秒内最多rate_limit次请求',
+  `capacity` int(11) NOT NULL COMMENT '最多允许请求次数, -1=不限制',
   `effective` smallint(4) NOT NULL COMMENT '是否有效1=有效, 0=无效',
   `expired_at` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4) COMMENT '过期时间',
   `updated_at` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4) ON UPDATE CURRENT_TIMESTAMP(4) COMMENT '更新时间',
@@ -29,3 +30,5 @@ CREATE TABLE `wave_midjourney_auth_token` (
 insert into wave_midjourney_auth_token (token, rate_limit, `period`, effective, expired_at) values ('abc', 3, 10, 1, '2024-12-01 00:00:00');
 
 alter table `wave_midjourney_stage_result` add column `token` varchar(256) DEFAULT NULL COMMENT '请求验证token' after `video_url`;
+
+alter table `wave_midjourney_auth_token` add column `capacity` int(11) DEFAULT -1 COMMENT '最多允许请求次数, -1=不限制' after `period`;
