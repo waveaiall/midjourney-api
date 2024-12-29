@@ -10,7 +10,7 @@ class AuthToken(BaseModel):
     rateLimit: int
     effective: int
     period: int
-    capacity: int
+    capacity: int = None
     expiredAt: datetime
     updatedAt: datetime
     createdAt: datetime
@@ -32,12 +32,11 @@ def updateTokenCapacity(token: str, capacity: int):
         token: 要更新的token
         capacity: 要更新的容量
     """
-    if capacity < 0:
+    if not capacity:
         logger.warning(
-            f"current capacity is {capacity}, less than 0 means infinite, so no need to update")
+            f"current capacity is {capacity}, means infinite, so no need to update")
         return
-    update_num = max(0, capacity)
-    query = f"UPDATE wave_midjourney_auth_token SET capacity = {update_num} WHERE token = '{token}' limit 1"
+    query = f"UPDATE wave_midjourney_auth_token SET capacity = {capacity} WHERE token = '{token}' limit 1"
     mysql_client.update(query, ())
 
 

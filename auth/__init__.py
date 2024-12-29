@@ -25,10 +25,10 @@ def is_valid(token: str):
 
 def is_exceed_capacity(token: str):
     capacity = TOKEN_2_ENTITY[token].capacity
-    if capacity == -1:
+    if capacity is None:
         return False
     else:
-        return capacity == 0
+        return capacity <= 0
 
 
 def update_capacity_mem_and_db(token: str, capacity: int):

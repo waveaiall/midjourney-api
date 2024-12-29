@@ -101,9 +101,16 @@ async def imagine(body: TriggerImagineIn, token: str = Header(None)):
         trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
         trigger_type = TriggerType.generate.value
         upsert_with_token(trigger_id, 'request', token)
+        current_capacity = get_auth_token(token).capacity
+        if current_capacity:
+            current_capacity -= 1
+        update_capacity_mem_and_db(token, current_capacity)
+        
+        if get_auth_token(token).capacity <=0:
+            raise HTTPException(status_code=429, detail="Exceed Capacity Limit")
 
         taskqueue.put(trigger_id, discord.generate, prompt)
-        update_capacity_mem_and_db(token, get_auth_token(token).capacity - 1)
+        
         return {"trigger_id": trigger_id, "trigger_type": trigger_type}
 
 

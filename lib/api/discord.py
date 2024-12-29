@@ -135,8 +135,7 @@ async def upscale(index: int, msg_id: str, msg_hash: str, trigger_id: str, **kwa
     }
     payload = _trigger_payload(3, {
         "component_type": 2,
-        "custom_id": f"MJ::JOB::upsample::{index}::{msg_hash}",
-        trigger_id: trigger_id,
+        "custom_id": f"MJ::JOB::upsample::{index}::{msg_hash}::<#{trigger_id}#>",
     }, **kwargs)
     return await trigger(payload)
 
