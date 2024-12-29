@@ -32,7 +32,7 @@ router = APIRouter()
 async def check_token(token: str = Header(None)):
     if not is_valid(token):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    if not is_exceed_capacity(token):
+    if is_exceed_capacity(token):
         raise HTTPException(status_code=429, detail="Exceed Capacity Limit")
 
 @router.post("/midjourney/callback", response_model=CallbackResponse)
