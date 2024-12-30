@@ -3,12 +3,12 @@ __version__ = '0.0.1'
 from asyncio_throttle import Throttler
 from loguru import logger
 
-from mysql import token_rate_limit
+from mysql import auth_token_mapper
 
 
 def refreshToken():
     global TOKEN_2_LIMIT
-    TOKEN_2_LIMIT = {auth_token.token: Throttler(rate_limit=auth_token.rateLimit, period=auth_token.period) for auth_token in token_rate_limit.selectAllEffective()}
+    TOKEN_2_LIMIT = {auth_token.token: Throttler(rate_limit=auth_token.rateLimit, period=auth_token.period) for auth_token in auth_token_mapper.selectAllEffective()}
     logger.info(
         f'refresh token info {TOKEN_2_LIMIT.keys()} limit {TOKEN_2_LIMIT.values()}')
 
@@ -30,14 +30,14 @@ def is_exceed_capacity(token: str):
 
 
 def update_capacity_mem_and_db(token: str, capacity: int):
-    token_rate_limit.updateTokenCapacity(token, capacity)
+    auth_token_mapper.updateTokenCapacity(token, capacity)
 
 
 def get_throttler(token: str):
     return TOKEN_2_LIMIT[token]
 
 def get_auth_token(token: str):
-    return token_rate_limit.selectAuthToken(token)
+    return auth_token_mapper.selectAuthToken(token)
 
 if __name__ == "__main__":
     refreshToken()

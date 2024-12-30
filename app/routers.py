@@ -22,12 +22,12 @@ from .schema import (
 )
 from loguru import logger
 import json
-from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result, upsert_with_token
+from mysql.stage_result_mapper import select_by_trigger, upsert_pic_result, upsert_with_token, upsert_origin_pic_result
 from auth import is_valid, get_throttler, is_exceed_capacity, update_capacity_mem_and_db, get_auth_token
+from lib.api.discord_util import is_forward_action
 
 
 router = APIRouter()
-
 
 async def check_token(token: str = Header(None)):
     if not is_valid(token):
@@ -44,21 +44,25 @@ async def callback(request: Request):
     stage = body_json['type']
     trigger_id = body_json["trigger_id"]
     msg_id = body_json["id"]
+    content = body_json["content"]
+
+    def upsert_result(content: str, trigger_id: str, stage: str, url: str, msg_id: str, msg_hash: str):
+        if is_forward_action(content):
+            upsert_pic_result(trigger_id, stage, content, msg_id, msg_hash)
+        else:
+            upsert_origin_pic_result(trigger_id, stage, content, msg_id, msg_hash)
+            
     if stage == 'end':
         filename = body_json["attachments"][0]["filename"]
         msg_hash = body_json["attachments"][0]["filename"].split(
             "_")[-1].split(".")[0]
         url = body_json["attachments"][0]["url"]
-        logger.info(f'trigger_id={trigger_id}')
-        logger.info(f'msg_id={msg_id}')
-        logger.info(f'filename={filename}')
-        logger.info(f'msg_hash={msg_hash}')
-        logger.info(f'url={url}')
-        upsert_pic_result(trigger_id, stage, url, msg_id, msg_hash)
+        logger.info(f'trigger_id={trigger_id} msg_id={msg_id} filename={filename} msg_hash={msg_hash} url={url}')
+        upsert_result(content, trigger_id, stage, url, msg_id, msg_hash)
     else:
         logger.info(
             '=======================>generating=======================>')
-        upsert_pic_result(trigger_id, stage, '', msg_id, '')
+        upsert_result(content, trigger_id, stage, '', msg_id, '')
     return {'code': 0, 'message': 'succeed'}
 
 
@@ -88,7 +92,7 @@ async def upscale_by_trigger(trigger_id: str, index: int, token: str = Header(No
             else:
                 row = data[0]
                 # upsert_with_token(trigger_id,'request', token)
-                return await upscale(TriggerUVIn(index=index, msg_id=row[4], msg_hash=row[5], trigger_id=trigger_id))
+                return await upscale(TriggerUVIn(index=index, msg_id=row[7], msg_hash=row[8], trigger_id=trigger_id))
         except Exception as e:
             logger.error(f'get result meet some error! msg={e}')
             traceback.print_exc()  # 打印堆栈跟踪信息
@@ -99,7 +103,7 @@ async def imagine(body: TriggerImagineIn, token: str = Header(None)):
     async with get_throttler(token):
         trigger_id, prompt = prompt_handler(body.prompt, body.picurl)
         trigger_type = TriggerType.generate.value
-        upsert_with_token(trigger_id, 'request', token)
+        upsert_with_token(trigger_id, 'request', token, prompt)
         current_capacity = get_auth_token(token).capacity
         if current_capacity:
             current_capacity -= 1
