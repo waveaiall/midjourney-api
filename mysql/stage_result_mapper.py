@@ -32,7 +32,7 @@ def upsert_pic_result(trigger_id: str, stage: str, pic_url: str, msg_id: str, ms
         status (str): 状态
         msg (str): 消息
     """
-    query = "INSERT INTO wave_midjourney_stage_result (trigger_id, stage, pic_url, msg_id, msg_hash, updated_at, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE stage = VALUES(stage), pic_url = VALUES(pic_url), msg_id = VALUES(msg_id), msg_hash=VALUES(msg_hash), origin_pic_url = origin_pic_url, origin_msg_id = origin_msg_id, origin_msg_hash=origin_msg_hash"
+    query = "INSERT INTO wave_midjourney_stage_result (trigger_id, stage, pic_url, msg_id, msg_hash, updated_at, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE stage = VALUES(stage), pic_url = VALUES(pic_url), msg_id = VALUES(msg_id), msg_hash=VALUES(msg_hash)"
     data = (trigger_id, stage, pic_url, msg_id, msg_hash, datetime.now(), datetime.now())
     mysql_client.insert(query, data)
 

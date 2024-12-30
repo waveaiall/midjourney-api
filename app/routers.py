@@ -52,7 +52,7 @@ async def callback(request: Request):
         else:
             upsert_origin_pic_result(trigger_id, stage, url, msg_id, msg_hash)
             
-    if stage == 'end':
+    if stage == 'end' or stage == 'generating':
         filename = body_json["attachments"][0]["filename"]
         msg_hash = body_json["attachments"][0]["filename"].split(
             "_")[-1].split(".")[0]
