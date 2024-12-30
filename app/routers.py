@@ -48,9 +48,9 @@ async def callback(request: Request):
 
     def upsert_result(content: str, trigger_id: str, stage: str, url: str, msg_id: str, msg_hash: str):
         if is_forward_action(content):
-            upsert_pic_result(trigger_id, stage, content, msg_id, msg_hash)
+            upsert_pic_result(trigger_id, stage, url, msg_id, msg_hash)
         else:
-            upsert_origin_pic_result(trigger_id, stage, content, msg_id, msg_hash)
+            upsert_origin_pic_result(trigger_id, stage, url, msg_id, msg_hash)
             
     if stage == 'end':
         filename = body_json["attachments"][0]["filename"]
